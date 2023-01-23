@@ -88,7 +88,7 @@ def on_message(client, userdata, msg):
     try:
         topic, data = brotli.decompress(base64.b64decode(json.loads(msg.payload)['data'])).split(b" ", maxsplit=1)
     # KeyError = filter chirpstack garbage
-    except (json.decoder.JSONDecodeError, KeyError):
+    except (json.decoder.JSONDecodeError, KeyError, brotli.error):
         # do nothing if zigbee2mqtt publishes garbage message
         return
     data = yaml.load(data, Loader=Loader)
