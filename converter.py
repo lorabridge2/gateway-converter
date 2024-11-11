@@ -9,6 +9,7 @@ import os
 import sys
 import base64
 import logging
+
 try:
     from yaml import CLoader as Loader
 except ImportError:
@@ -25,27 +26,27 @@ def get_fileenv(var: str):
         Content of the environment variable file if exists, or the value of the environment variable.
         None if the environment variable does not exist.
     """
-    if path := os.environ.get(var + '_FILE'):
+    if path := os.environ.get(var + "_FILE"):
         with open(path) as file:
             return file.read().strip()
     else:
         try:
-            with open(os.path.join('run', 'secrets', var.lower())) as file:
+            with open(os.path.join("run", "secrets", var.lower())) as file:
                 return file.read().strip()
         except IOError:
             # mongo username needs to be string and not empty (fix for sphinx)
-            if 'sphinx' in sys.modules:
-                return os.environ.get(var, 'fail')
+            if "sphinx" in sys.modules:
+                return os.environ.get(var, "fail")
             else:
                 return os.environ.get(var)
 
 
-MQTT_HOST = os.environ.get('CON_MQTT_HOST', '127.0.0.1')
-MQTT_PORT = int(os.environ.get('CON_MQTT_PORT', 1883))
-MQTT_USERNAME = get_fileenv('CON_MQTT_USERNAME') or 'lorabridge'
-MQTT_PASSWORD = get_fileenv('CON_MQTT_PASSWORD') or 'lorabridge'
-CHIRP_TOPIC = os.environ.get('CON_CHIRP_TOPIC', "chirp/stack")
-DEV_MAN_TOPIC = os.environ.get('CON_DEV_MAN_TOPIC', "devicemanager")
+MQTT_HOST = os.environ.get("CON_MQTT_HOST", "127.0.0.1")
+MQTT_PORT = int(os.environ.get("CON_MQTT_PORT", 1883))
+MQTT_USERNAME = get_fileenv("CON_MQTT_USERNAME") or "lorabridge"
+MQTT_PASSWORD = get_fileenv("CON_MQTT_PASSWORD") or "lorabridge"
+CHIRP_TOPIC = os.environ.get("CON_CHIRP_TOPIC", "chirp/stack")
+DEV_MAN_TOPIC = os.environ.get("CON_DEV_MAN_TOPIC", "devicemanager")
 
 # DEVICE_CLASSES = ("None", "apparent_power", "aqi", "battery", "carbon_dioxide", "carbon_monoxide", "current", "date",
 #                   "duration", "energy", "frequency", "gas", "humidity", "illuminance", "monetary", "nitrogen_dioxide",
@@ -54,24 +55,123 @@ DEV_MAN_TOPIC = os.environ.get('CON_DEV_MAN_TOPIC', "devicemanager")
 #                   "volatile_organic_compounds", "voltage")
 
 DEVICE_CLASSES = (
-    'ac_frequency', 'action', 'action_group', 'angle', 'angle_axis', 'aqi', 'auto_lock', 'auto_relock_time',
-    'away_mode', 'away_preset_days', 'away_preset_temperature', 'battery', 'battery_low', 'battery_voltage',
-    'boost_time', 'button_lock', 'carbon_monoxide', 'child_lock', 'co2', 'co', 'comfort_temperature',
-    'consumer_connected', 'contact', 'cover_position', 'cover_position_tilt', 'cover_tilt', 'cpu_temperature',
-    'cube_side', 'current', 'current_phase_b', 'current_phase_c', 'deadzone_temperature', 'device_temperature', 'eco2',
-    'eco_mode', 'eco_temperature', 'effect', 'energy', 'fan', 'flip_indicator_light', 'force', 'formaldehyd', 'gas',
-    'hcho', 'holiday_temperature', 'humidity', 'illuminance', 'illuminance_lux', 'brightness_state', 'keypad_lockout',
-    'led_disabled_night', 'light_brightness', 'light_brightness_color', 'light_brightness_colorhs',
-    'light_brightness_colortemp', 'light_brightness_colortemp_color', 'light_brightness_colortemp_colorhs',
-    'light_brightness_colortemp_colorxy', 'light_brightness_colorxy', 'light_colorhs', 'linkquality',
-    'local_temperature', 'lock', 'lock_action', 'lock_action_source_name', 'lock_action_source_user', 'max_temperature',
-    'max_temperature_limit', 'min_temperature', 'noise', 'noise_detected', 'occupancy', 'occupancy_level',
-    'open_window', 'open_window_temperature', 'pm10', 'pm25', 'position', 'power', 'power_factor', 'power_apparent',
-    'power_on_behavior', 'power_outage_count', 'power_outage_memory', 'presence', 'pressure',
-    'programming_operation_mode', 'smoke', 'soil_moisture', 'sos', 'sound_volume', 'switch', 'switch_type',
-    'switch_type_2', 'tamper', 'temperature', 'test', 'valve_position', 'valve_switch', 'valve_state',
-    'valve_detection', 'vibration', 'voc', 'voltage', 'voltage_phase_b', 'voltage_phase_c', 'water_leak', 'warning',
-    'week', 'window_detection', 'moving', 'x_axis', 'y_axis', 'z_axis', 'pincode', 'squawk')
+    "ac_frequency",
+    "action",
+    "action_group",
+    "angle",
+    "angle_axis",
+    "aqi",
+    "auto_lock",
+    "auto_relock_time",
+    "away_mode",
+    "away_preset_days",
+    "away_preset_temperature",
+    "battery",
+    "battery_low",
+    "battery_voltage",
+    "boost_time",
+    "button_lock",
+    "carbon_monoxide",
+    "child_lock",
+    "co2",
+    "co",
+    "comfort_temperature",
+    "consumer_connected",
+    "contact",
+    "cover_position",
+    "cover_position_tilt",
+    "cover_tilt",
+    "cpu_temperature",
+    "cube_side",
+    "current",
+    "current_phase_b",
+    "current_phase_c",
+    "deadzone_temperature",
+    "device_temperature",
+    "eco2",
+    "eco_mode",
+    "eco_temperature",
+    "effect",
+    "energy",
+    "fan",
+    "flip_indicator_light",
+    "force",
+    "formaldehyd",
+    "gas",
+    "hcho",
+    "holiday_temperature",
+    "humidity",
+    "illuminance",
+    "illuminance_lux",
+    "brightness_state",
+    "keypad_lockout",
+    "led_disabled_night",
+    "light_brightness",
+    "light_brightness_color",
+    "light_brightness_colorhs",
+    "light_brightness_colortemp",
+    "light_brightness_colortemp_color",
+    "light_brightness_colortemp_colorhs",
+    "light_brightness_colortemp_colorxy",
+    "light_brightness_colorxy",
+    "light_colorhs",
+    "linkquality",
+    "local_temperature",
+    "lock",
+    "lock_action",
+    "lock_action_source_name",
+    "lock_action_source_user",
+    "max_temperature",
+    "max_temperature_limit",
+    "min_temperature",
+    "noise",
+    "noise_detected",
+    "occupancy",
+    "occupancy_level",
+    "open_window",
+    "open_window_temperature",
+    "pm10",
+    "pm25",
+    "position",
+    "power",
+    "power_factor",
+    "power_apparent",
+    "power_on_behavior",
+    "power_outage_count",
+    "power_outage_memory",
+    "presence",
+    "pressure",
+    "programming_operation_mode",
+    "smoke",
+    "soil_moisture",
+    "sos",
+    "sound_volume",
+    "switch",
+    "switch_type",
+    "switch_type_2",
+    "tamper",
+    "temperature",
+    "test",
+    "valve_position",
+    "valve_switch",
+    "valve_state",
+    "valve_detection",
+    "vibration",
+    "voc",
+    "voltage",
+    "voltage_phase_b",
+    "voltage_phase_c",
+    "water_leak",
+    "warning",
+    "week",
+    "window_detection",
+    "moving",
+    "x_axis",
+    "y_axis",
+    "z_axis",
+    "pincode",
+    "squawk",
+)
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -80,16 +180,21 @@ def on_connect(client, userdata, flags, rc):
 
     # Subscribing in on_connect() means that if we lose the connection and
     # reconnect then subscriptions will be renewed.
-    client.subscribe(userdata['chirp'] + '/#')
+    client.subscribe(userdata["chirp"] + "/#")
 
 
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
+    # get payload from chirpstack message
+    lora_payload = base64.b64decode(json.loads(msg.payload)["data"])
+    msg_type = lora_payload[0]
+    lora_payload = lora_payload[1:]
     try:
-        topic, data = brotli.decompress(base64.b64decode(json.loads(msg.payload)['data'])).split(b" ", maxsplit=1)
+        topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
     # KeyError = filter chirpstack garbage
-    except (json.decoder.JSONDecodeError, KeyError, brotli.error):
+    except (json.decoder.JSONDecodeError, KeyError, brotli.error) as err:
         # do nothing if zigbee2mqtt publishes garbage message
+        print(err)
         return
     data = yaml.load(data, Loader=Loader)
 
@@ -110,12 +215,16 @@ def on_message(client, userdata, msg):
     #     topic = topic + "/" + tlist[1]
     # topic = bytes(topic, "ascii")
 
-    logging.info(DEV_MAN_TOPIC + "/" + topic.decode('utf-8') + " " + str(json.dumps(res)))
-    client.publish(DEV_MAN_TOPIC + "/" + topic.decode('utf-8'), json.dumps(res))
+    logging.info(
+        DEV_MAN_TOPIC + "/" + topic.decode("utf-8") + " " + str(json.dumps(res))
+    )
+    client.publish(DEV_MAN_TOPIC + "/" + topic.decode("utf-8"), json.dumps(res))
 
 
 def main():
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(
+        format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO
+    )
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
@@ -131,5 +240,5 @@ def main():
     client.loop_forever()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     main()
