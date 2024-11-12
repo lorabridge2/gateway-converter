@@ -189,6 +189,7 @@ def on_message(client, userdata, msg):
     lora_payload = base64.b64decode(json.loads(msg.payload)["data"])
     msg_type = lora_payload[0]
     lora_payload = lora_payload[1:]
+    print(str(msg_type))
     try:
         topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
     # KeyError = filter chirpstack garbage
