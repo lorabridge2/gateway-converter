@@ -192,6 +192,8 @@ def on_message(client, userdata, msg):
     print(str(msg_type))
     try:
         topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
+        print(topic)
+        print(data)
     # KeyError = filter chirpstack garbage
     except (json.decoder.JSONDecodeError, KeyError, brotli.error) as err:
         # do nothing if zigbee2mqtt publishes garbage message
