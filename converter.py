@@ -172,6 +172,26 @@ DEVICE_CLASSES = (
     "pincode",
     "squawk",
 )
+from enum import IntEnum
+class lbdata_types(IntEnum):
+    data = 7
+    timesync_req = 1
+    system_event = 2
+    user_event = 3
+    lbflow_digest = 4
+    lbdevice_join = 5
+    heartbeat = 6
+
+
+# lbdata_types = {
+#     "data": 7,
+#     "timesync_req": 1,
+#     "system_event": 2,
+#     "user_event": 3,
+#     "lbflow_digest": 4,
+#     "lbdevice_join": 5,
+#     "heartbeat": 6,
+# }
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -186,44 +206,60 @@ def on_connect(client, userdata, flags, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     # get payload from chirpstack message
-    print(json.loads(msg.payload))
-    lora_payload = base64.b64decode(json.loads(msg.payload)["data"])
-    msg_type = lora_payload[0]
-    lora_payload = lora_payload[1:]
-    print(str(msg_type))
     try:
-        topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
+        lora_payload = base64.b64decode(json.loads(msg.payload)["data"])
+        msg_type = int.from_bytes(lora_payload[0], "big")
+        lora_payload = lora_payload[1:]
+        print(str(msg_type))
+        # topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
         print(topic)
         print(data)
     # KeyError = filter chirpstack garbage
-    except (json.decoder.JSONDecodeError, KeyError, brotli.error) as err:
+    except (json.decoder.JSONDecodeError, KeyError, IndexError) as err:
         # do nothing if zigbee2mqtt publishes garbage message
+        print(json.loads(msg.payload))
         print(err)
         return
-    data = yaml.load(data, Loader=Loader)
+    match msg_type:
+        # lbdata_types as dict and lbdata_types["data"] is not allowed
+        # Any non-dotted identifiers are considered capture patterns - NOT PATTERNS
+        # https://stackoverflow.com/a/77694460
+        case lbdata_types.data:
+            try:
+                topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
+            except brotli.error as err:
+                print(json.loads(msg.payload))
+                print(err)
+                return
 
-    res = {}
-    for key, value in data.items():
-        try:
-            res[DEVICE_CLASSES[int(key)]] = value
-        except ValueError:
-            res[key] = value
+            data = yaml.load(data, Loader=Loader)
 
-    # import base64
-    # topic = topic.decode('utf-8')
-    # tlist = topic.split("/", 1)
-    # topic = tlist[0]
-    # topic = base64.b85decode(topic)
-    # topic = "0x{:016x}".format(int.from_bytes(value, byteorder="big"))
-    # if tlist > 1:
-    #     topic = topic + "/" + tlist[1]
-    # topic = bytes(topic, "ascii")
+            res = {}
+            for key, value in data.items():
+                try:
+                    res[DEVICE_CLASSES[int(key)]] = value
+                except ValueError:
+                    res[key] = value
 
-    logging.info(
-        DEV_MAN_TOPIC + "/" + topic.decode("utf-8") + " " + str(json.dumps(res))
-    )
-    client.publish(DEV_MAN_TOPIC + "/" + topic.decode("utf-8"), json.dumps(res))
-
+            logging.info(
+                DEV_MAN_TOPIC + "/" + topic.decode("utf-8") + " " + str(json.dumps(res))
+            )
+            client.publish(DEV_MAN_TOPIC + "/" + topic.decode("utf-8"), json.dumps(res))
+        case lbdata_types.timesync_req | lbdata_types.heartbeat:
+            print("timesync/heartbeat")
+            pass
+        case lbdata_types.system_event:#
+            print("system_event")
+            pass
+        case lbdata_types.user_event:
+            print("user_event")
+            pass
+        case lbdata_types.lbflow_digest:
+            print("lbflow_digest")
+            pass
+        case lbdata_types.lbdevice_join:
+            print("lbdevice_join")
+            pass
 
 def main():
     logging.basicConfig(
