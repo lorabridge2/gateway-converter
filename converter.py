@@ -186,6 +186,7 @@ def on_connect(client, userdata, flags, rc):
 # The callback for when a PUBLISH message is received from the server.
 def on_message(client, userdata, msg):
     # get payload from chirpstack message
+    print(json.loads(msg.payload))
     lora_payload = base64.b64decode(json.loads(msg.payload)["data"])
     msg_type = lora_payload[0]
     lora_payload = lora_payload[1:]
