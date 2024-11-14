@@ -208,7 +208,7 @@ def on_message(client, userdata, msg):
     # get payload from chirpstack message
     try:
         lora_payload = base64.b64decode(json.loads(msg.payload)["data"])
-        msg_type = int.from_bytes(lora_payload[0], "big")
+        msg_type = lora_payload[0]
         lora_payload = lora_payload[1:]
         print(str(msg_type))
         # topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
