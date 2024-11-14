@@ -173,6 +173,8 @@ DEVICE_CLASSES = (
     "squawk",
 )
 from enum import IntEnum
+
+
 class lbdata_types(IntEnum):
     data = 7
     timesync_req = 1
@@ -212,8 +214,6 @@ def on_message(client, userdata, msg):
         lora_payload = lora_payload[1:]
         print(str(msg_type))
         # topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
-        print(topic)
-        print(data)
     # KeyError = filter chirpstack garbage
     except (json.decoder.JSONDecodeError, KeyError, IndexError) as err:
         # do nothing if zigbee2mqtt publishes garbage message
@@ -227,6 +227,8 @@ def on_message(client, userdata, msg):
         case lbdata_types.data:
             try:
                 topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
+                print(topic)
+                print(data)
             except brotli.error as err:
                 print(json.loads(msg.payload))
                 print(err)
@@ -248,7 +250,7 @@ def on_message(client, userdata, msg):
         case lbdata_types.timesync_req | lbdata_types.heartbeat:
             print("timesync/heartbeat")
             pass
-        case lbdata_types.system_event:#
+        case lbdata_types.system_event:  #
             print("system_event")
             pass
         case lbdata_types.user_event:
@@ -260,6 +262,7 @@ def on_message(client, userdata, msg):
         case lbdata_types.lbdevice_join:
             print("lbdevice_join")
             pass
+
 
 def main():
     logging.basicConfig(
