@@ -166,6 +166,7 @@ DEVICE_CLASSES = (
     "z_axis",
     "pincode",
     "squawk",
+    "state",
 )
 from enum import IntEnum
 
