@@ -248,7 +248,11 @@ def on_message(client, userdata, msg):
             pass
         case lbdata_types.lbdevice_join:
             print("lbdevice_join")
-            pass
+            dev_key = lora_payload[0]
+            attributes = list(lora_payload[1:])
+            attributes = [DEVICE_CLASSES[x] for x in lora_payload[1:]]
+            print(str(dev_key))
+            print(attributes)
 
 
 def main():
