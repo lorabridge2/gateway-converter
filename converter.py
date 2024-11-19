@@ -232,8 +232,8 @@ def on_message(client, userdata, msg):
                 except ValueError:
                     res[key] = value
 
-            logging.info(DEV_MAN_TOPIC + "/" + topic.decode("utf-8") + " " + str(json.dumps(res)))
-            client.publish(DEV_MAN_TOPIC + "/" + topic.decode("utf-8"), json.dumps(res))
+            logging.info(DEV_MAN_TOPIC + "/" + topic + " " + str(json.dumps(res)))
+            client.publish(DEV_MAN_TOPIC + "/" + topic, json.dumps(res))
         case lbdata_types.timesync_req | lbdata_types.heartbeat:
             print("timesync/heartbeat")
             pass
