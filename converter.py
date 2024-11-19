@@ -210,7 +210,7 @@ def on_message(client, userdata, msg):
         # https://stackoverflow.com/a/77694460
         case lbdata_types.data:
             try:
-                data = msgpack.loads(lora_payload)
+                data = msgpack.loads(lora_payload, strict_map_key=False)
                 topic = data[-1]
                 del data[-1]
                 if isinstance(topic, int):
