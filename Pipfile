@@ -4,9 +4,8 @@ verify_ssl = true
 name = "pypi"
 
 [packages]
-pyyaml = "*"
 paho-mqtt = "*"
-brotli = "*"
+msgpack = "*"
 
 [dev-packages]
 

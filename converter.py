@@ -1,19 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding=utf-8 -*-
 
-import paho.mqtt.client as mqtt
+import base64
 import json
-import brotli
-import yaml
+import logging
 import os
 import sys
-import base64
-import logging
 
-try:
-    from yaml import CLoader as Loader
-except ImportError:
-    from yaml import Loader
+import msgpack
+import paho.mqtt.client as mqtt
 
 
 def get_fileenv(var: str):
@@ -185,17 +180,6 @@ class lbdata_types(IntEnum):
     heartbeat = 6
 
 
-# lbdata_types = {
-#     "data": 7,
-#     "timesync_req": 1,
-#     "system_event": 2,
-#     "user_event": 3,
-#     "lbflow_digest": 4,
-#     "lbdevice_join": 5,
-#     "heartbeat": 6,
-# }
-
-
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     logging.info("Connected with result code " + str(rc))
@@ -226,15 +210,20 @@ def on_message(client, userdata, msg):
         # https://stackoverflow.com/a/77694460
         case lbdata_types.data:
             try:
-                topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
+                data = msgpack.loads(lora_payload)
+                topic = data[-1]
+                del data[-1]
+                if isinstance(topic, int):
+                    topic = "0x{:016x}".format(topic)
+                # topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
                 print(topic)
                 print(data)
-            except brotli.error as err:
+            except msgpack.UnpackException as err:
                 print(json.loads(msg.payload))
                 print(err)
                 return
 
-            data = yaml.load(data, Loader=Loader)
+            # data = yaml.load(data, Loader=Loader)
 
             res = {}
             for key, value in data.items():
@@ -243,9 +232,7 @@ def on_message(client, userdata, msg):
                 except ValueError:
                     res[key] = value
 
-            logging.info(
-                DEV_MAN_TOPIC + "/" + topic.decode("utf-8") + " " + str(json.dumps(res))
-            )
+            logging.info(DEV_MAN_TOPIC + "/" + topic.decode("utf-8") + " " + str(json.dumps(res)))
             client.publish(DEV_MAN_TOPIC + "/" + topic.decode("utf-8"), json.dumps(res))
         case lbdata_types.timesync_req | lbdata_types.heartbeat:
             print("timesync/heartbeat")
@@ -265,9 +252,7 @@ def on_message(client, userdata, msg):
 
 
 def main():
-    logging.basicConfig(
-        format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO
-    )
+    logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
     client = mqtt.Client()
     client.on_connect = on_connect
     client.on_message = on_message
