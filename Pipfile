@@ -7,6 +7,7 @@ name = "pypi"
 paho-mqtt = "*"
 msgpack = "*"
 redis = "*"
+async-timeout = "*"
 
 [dev-packages]
 
