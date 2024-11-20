@@ -6,9 +6,11 @@ import json
 import logging
 import os
 import sys
+from enum import IntEnum
 
 import msgpack
 import paho.mqtt.client as mqtt
+import redis
 
 
 def get_fileenv(var: str):
@@ -42,6 +44,9 @@ MQTT_USERNAME = get_fileenv("CON_MQTT_USERNAME") or "lorabridge"
 MQTT_PASSWORD = get_fileenv("CON_MQTT_PASSWORD") or "lorabridge"
 CHIRP_TOPIC = os.environ.get("CON_CHIRP_TOPIC", "chirp/stack")
 DEV_MAN_TOPIC = os.environ.get("CON_DEV_MAN_TOPIC", "devicemanager")
+REDIS_HOST = os.environ.get("DEV_REDIS_HOST", "localhost")
+REDIS_PORT = int(os.environ.get("DEV_REDIS_PORT", 6379))
+REDIS_DB = int(os.environ.get("DEV_REDIS_DB", 0))
 
 # DEVICE_CLASSES = ("None", "apparent_power", "aqi", "battery", "carbon_dioxide", "carbon_monoxide", "current", "date",
 #                   "duration", "energy", "frequency", "gas", "humidity", "illuminance", "monetary", "nitrogen_dioxide",
@@ -168,7 +173,9 @@ DEVICE_CLASSES = (
     "squawk",
     "state",
 )
-from enum import IntEnum
+
+REDIS_SEPARATOR = ":"
+REDIS_PREFIX = "lorabridge:flowman"
 
 
 class lbdata_types(IntEnum):
@@ -246,7 +253,13 @@ def on_message(client, userdata, msg):
             pass
         case lbdata_types.lbflow_digest:
             print("lbflow_digest")
-            pass
+            id = lora_payload[0]
+            hash = lora_payload[1:]
+
+            userdata["r_client"].lpush(
+                REDIS_SEPARATOR.join([REDIS_PREFIX, "hash-check"]),
+                json.dumps({"id": id, "hash": hash}),
+            )
         case lbdata_types.lbdevice_join:
             print("lbdevice_join")
             print(lora_payload)
@@ -265,7 +278,8 @@ def main():
 
     client.username_pw_set(MQTT_USERNAME, MQTT_PASSWORD)
     client.connect(MQTT_HOST, MQTT_PORT, 60)
-    client.user_data_set({"chirp": CHIRP_TOPIC})
+    r_client = redis.Redis(host=REDIS_HOST, port=REDIS_PORT, db=REDIS_DB, decode_responses=True)
+    client.user_data_set({"chirp": CHIRP_TOPIC, "r_client": r_client})
 
     # Blocking call that processes network traffic, dispatches callbacks and
     # handles reconnecting.
