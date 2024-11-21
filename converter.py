@@ -2,6 +2,7 @@
 # -*- coding=utf-8 -*-
 
 import base64
+import binascii
 import json
 import logging
 import os
@@ -258,7 +259,7 @@ def on_message(client, userdata, msg):
 
             userdata["r_client"].lpush(
                 REDIS_SEPARATOR.join([REDIS_PREFIX, "hash-check"]),
-                json.dumps({"id": id, "hash": hash}),
+                json.dumps({"id": id, "hash": binascii.hexlify(hash).decode()}),
             )
         case lbdata_types.lbdevice_join:
             print("lbdevice_join")
