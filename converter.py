@@ -257,6 +257,9 @@ def on_message(client, userdata, msg):
             id = lora_payload[0]
             hash = lora_payload[1:]
 
+            print(hash)
+            print(binascii.hexlify(hash).decode())
+
             userdata["r_client"].lpush(
                 REDIS_SEPARATOR.join([REDIS_PREFIX, "hash-check"]),
                 json.dumps({"id": id, "hash": binascii.hexlify(hash).decode()}),
