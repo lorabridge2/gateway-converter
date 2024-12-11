@@ -277,7 +277,7 @@ def on_message(client, userdata, msg):
             print("lbdevice_name")
             print(lora_payload)
             lb_id = lora_payload[0]
-            ieee_id = "0x{:016x}".format(int.from_bytes(lora_payload[1:9]))
+            ieee_id = "0x{:016x}".format(int.from_bytes(lora_payload[1:9], "big"))
             name = lora_payload[9:]
             print(str(lb_id))
             print(ieee_id)
