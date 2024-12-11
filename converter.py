@@ -187,6 +187,7 @@ class lbdata_types(IntEnum):
     lbflow_digest = 4
     lbdevice_join = 5
     heartbeat = 6
+    lbdevice_name = 8
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -268,10 +269,13 @@ def on_message(client, userdata, msg):
             print("lbdevice_join")
             print(lora_payload)
             dev_key = lora_payload[0]
-            attributes = list(lora_payload[1:])
+            # attributes = list(lora_payload[1:])
             attributes = [DEVICE_CLASSES[x] for x in lora_payload[1:]]
             print(str(dev_key))
             print(attributes)
+        case lbdata_types.lbdevice_name:
+            print("lbdevice_name")
+            print(lora_payload)
 
 
 def main():
