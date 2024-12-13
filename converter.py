@@ -242,8 +242,13 @@ def on_message(client, userdata, msg):
                 except ValueError:
                     res[key] = value
 
-            logging.info(DEV_MAN_TOPIC + "/" + topic + " " + str(json.dumps(res)))
-            client.publish(DEV_MAN_TOPIC + "/" + topic, json.dumps(res))
+            logging.info(
+                DEV_MAN_TOPIC + "/data" + " " + str({"type": "data", "data": res, "ieee_id": topic})
+            )
+            client.publish(
+                DEV_MAN_TOPIC + "/data",
+                json.dumps({"type": "data", "data": res, "ieee_id": topic}),
+            )
         case lbdata_types.timesync_req | lbdata_types.heartbeat:
             print("timesync/heartbeat")
             pass
@@ -273,6 +278,16 @@ def on_message(client, userdata, msg):
             attributes = [DEVICE_CLASSES[x] for x in lora_payload[1:]]
             print(str(dev_key))
             print(attributes)
+            logging.info(
+                DEV_MAN_TOPIC
+                + "/join"
+                + " "
+                + str({"type": "attributes", "attributes": attributes, "lb_id": dev_key})
+            )
+            client.publish(
+                DEV_MAN_TOPIC + "/join",
+                json.dumps({"type": "attributes", "attributes": attributes, "lb_id": dev_key}),
+            )
         case lbdata_types.lbdevice_name:
             print("lbdevice_name")
             print(lora_payload)
@@ -282,6 +297,16 @@ def on_message(client, userdata, msg):
             print(str(lb_id))
             print(ieee_id)
             print(name)
+            logging.info(
+                DEV_MAN_TOPIC
+                + "/name"
+                + " "
+                + str({"type": "name", "name": name, "lb_id": lb_id, "ieee_id": ieee_id})
+            )
+            client.publish(
+                DEV_MAN_TOPIC + "/name",
+                json.dumps({"type": "name", "name": name, "lb_id": lb_id, "ieee_id": ieee_id}),
+            )
 
 
 def main():
