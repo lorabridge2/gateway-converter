@@ -251,13 +251,14 @@ def on_message(client, userdata, msg):
             )
         case lbdata_types.timesync_req | lbdata_types.heartbeat:
             print("timesync/heartbeat")
-            pass
-        case lbdata_types.system_event:  #
+        case lbdata_types.system_event:
             print("system_event")
-            pass
+            msg = lora_payload[1:]
+            print(msg)
         case lbdata_types.user_event:
             print("user_event")
-            pass
+            msg = lora_payload[1:]
+            print(msg)
         case lbdata_types.lbflow_digest:
             print("lbflow_digest")
             id = lora_payload[0]
