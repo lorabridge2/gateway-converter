@@ -259,7 +259,7 @@ def on_message(client, userdata, msg):
             print(lora_payload)
             r_client: redis.Redis = userdata["r_client"]
             userdata["r_client"]
-            id = uuid.uuid4()
+            id = str(uuid.uuid4())
             timestamp = time.time()
             r_client.hset(
                 REDIS_SEPARATOR.join([REDIS_PREFIX, "system", id]),
