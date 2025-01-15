@@ -7,6 +7,8 @@ import json
 import logging
 import os
 import sys
+import uuid
+import time
 from enum import IntEnum
 
 import msgpack
@@ -177,6 +179,7 @@ DEVICE_CLASSES = (
 
 REDIS_SEPARATOR = ":"
 REDIS_PREFIX = "lorabridge:flowman"
+REDIS_MSG_PREFIX = "lorabridge:events"
 
 
 class lbdata_types(IntEnum):
@@ -254,6 +257,21 @@ def on_message(client, userdata, msg):
         case lbdata_types.system_event:
             print("system_event")
             print(lora_payload)
+            r_client: redis.Redis = userdata["r_client"]
+            userdata["r_client"]
+            id = uuid.uuid4()
+            timestamp = time.time()
+            r_client.hset(
+                REDIS_SEPARATOR.join([REDIS_PREFIX, "system", id]),
+                mapping={
+                    "msg": lora_payload.decode(),
+                    "timestamp": timestamp,
+                    "seen": False,
+                },
+            )
+            r_client.zadd(
+                REDIS_SEPARATOR.join([REDIS_PREFIX, "system", "msgs"]), mapping={id: timestamp}
+            )
         case lbdata_types.user_event:
             print("user_event")
             print(lora_payload)
