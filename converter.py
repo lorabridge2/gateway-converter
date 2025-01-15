@@ -262,7 +262,7 @@ def on_message(client, userdata, msg):
             id = str(uuid.uuid4())
             timestamp = time.time()
             r_client.hset(
-                REDIS_SEPARATOR.join([REDIS_PREFIX, "system", id]),
+                REDIS_SEPARATOR.join([REDIS_MSG_PREFIX, "system", id]),
                 mapping={
                     "msg": lora_payload.decode(),
                     "timestamp": timestamp,
@@ -270,7 +270,7 @@ def on_message(client, userdata, msg):
                 },
             )
             r_client.zadd(
-                REDIS_SEPARATOR.join([REDIS_PREFIX, "system", "msgs"]), mapping={id: timestamp}
+                REDIS_SEPARATOR.join([REDIS_MSG_PREFIX, "system", "msgs"]), mapping={id: timestamp}
             )
         case lbdata_types.user_event:
             print("user_event")
