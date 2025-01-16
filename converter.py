@@ -266,7 +266,8 @@ def on_message(client, userdata, msg):
                 mapping={
                     "msg": lora_payload.decode(),
                     "timestamp": timestamp,
-                    "seen": 0, # False
+                    "seen": 0,  # False,
+                    "id": id,
                 },
             )
             r_client.zadd(
