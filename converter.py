@@ -252,17 +252,25 @@ def on_message(client, userdata, msg):
                 DEV_MAN_TOPIC + "/data",
                 json.dumps({"type": "data", "data": res, "ieee_id": topic}),
             )
-        case lbdata_types.timesync_req | lbdata_types.heartbeat:
-            print("timesync/heartbeat")
-        case lbdata_types.system_event:
-            print("system_event")
+        case lbdata_types.timesync_req:
+            print("timesync")
+        case lbdata_types.heartbeat:
+            print("heartbeat")
+        case lbdata_types.system_event | lbdata_types.user_event:
             print(lora_payload)
+            queue = "user"
+            if msg_type == lbdata_types.system_event:
+                queue = "system"
+                print("system_event")
+            else:
+                print("user_event")
+
             r_client: redis.Redis = userdata["r_client"]
             userdata["r_client"]
             id = str(uuid.uuid4())
             timestamp = time.time()
             r_client.hset(
-                REDIS_SEPARATOR.join([REDIS_MSG_PREFIX, "system", id]),
+                REDIS_SEPARATOR.join([REDIS_MSG_PREFIX, queue, id]),
                 mapping={
                     "msg": lora_payload.decode(),
                     "timestamp": timestamp,
@@ -271,11 +279,8 @@ def on_message(client, userdata, msg):
                 },
             )
             r_client.zadd(
-                REDIS_SEPARATOR.join([REDIS_MSG_PREFIX, "system", "msgs"]), mapping={id: timestamp}
+                REDIS_SEPARATOR.join([REDIS_MSG_PREFIX, queue, "msgs"]), mapping={id: timestamp}
             )
-        case lbdata_types.user_event:
-            print("user_event")
-            print(lora_payload)
         case lbdata_types.lbflow_digest:
             print("lbflow_digest")
             id = lora_payload[0]
