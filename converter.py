@@ -45,11 +45,16 @@ MQTT_HOST = os.environ.get("CON_MQTT_HOST", "127.0.0.1")
 MQTT_PORT = int(os.environ.get("CON_MQTT_PORT", 1883))
 MQTT_USERNAME = get_fileenv("CON_MQTT_USERNAME") or "lorabridge"
 MQTT_PASSWORD = get_fileenv("CON_MQTT_PASSWORD") or "lorabridge"
-CHIRP_TOPIC = os.environ.get("CON_CHIRP_TOPIC", "chirp/stack")
+# CHIRP_TOPIC = os.environ.get("CON_CHIRP_TOPIC", "chirp/stack")
 DEV_MAN_TOPIC = os.environ.get("CON_DEV_MAN_TOPIC", "devicemanager")
 REDIS_HOST = os.environ.get("DEV_REDIS_HOST", "localhost")
 REDIS_PORT = int(os.environ.get("DEV_REDIS_PORT", 6379))
 REDIS_DB = int(os.environ.get("DEV_REDIS_DB", 0))
+DEV_EUI = os.environ.get("DEV_EUI").removeprefix(r"\x")
+APP_ID = None
+with open(f"/device/{DEV_EUI}.json") as dfile:
+    APP_ID = json.loads(dfile.read())["application_id"]
+CHIRP_TOPIC=f"application/{APP_ID}/device/"
 
 # DEVICE_CLASSES = ("None", "apparent_power", "aqi", "battery", "carbon_dioxide", "carbon_monoxide", "current", "date",
 #                   "duration", "energy", "frequency", "gas", "humidity", "illuminance", "monetary", "nitrogen_dioxide",
