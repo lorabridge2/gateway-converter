@@ -54,7 +54,7 @@ DEV_EUI = os.environ.get("DEV_EUI").removeprefix(r"\x")
 APP_ID = None
 with open(f"/device/{DEV_EUI}.json") as dfile:
     APP_ID = json.loads(dfile.read())["application_id"]
-CHIRP_TOPIC=f"application/{APP_ID}/device/"
+CHIRP_TOPIC = f"application/{APP_ID}/device/"
 
 # DEVICE_CLASSES = ("None", "apparent_power", "aqi", "battery", "carbon_dioxide", "carbon_monoxide", "current", "date",
 #                   "duration", "energy", "frequency", "gas", "humidity", "illuminance", "monetary", "nitrogen_dioxide",
@@ -198,6 +198,11 @@ class lbdata_types(IntEnum):
     lbdevice_name = 8
 
 
+class status_types(IntEnum):
+    TRANSMISSION_COMPLETE: 0
+    TRANSMISSION_FAILED: 1
+
+
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     logging.info("Connected with result code " + str(rc))
@@ -271,21 +276,31 @@ def on_message(client, userdata, msg):
                 print("user_event")
 
             r_client: redis.Redis = userdata["r_client"]
-            userdata["r_client"]
-            id = str(uuid.uuid4())
-            timestamp = time.time()
-            r_client.hset(
-                REDIS_SEPARATOR.join([REDIS_MSG_PREFIX, queue, id]),
-                mapping={
-                    "msg": lora_payload.decode(),
-                    "timestamp": timestamp,
-                    "seen": 0,  # False,
-                    "id": id,
-                },
-            )
-            r_client.zadd(
-                REDIS_SEPARATOR.join([REDIS_MSG_PREFIX, queue, "msgs"]), mapping={id: timestamp}
-            )
+
+            try:
+                msg = msgpack.loads(lora_payload, strict_map_key=False)
+                if msg['type'] in [status_types.TRANSMISSION_COMPLETE, status_types.TRANSMISSION_FAILED]:
+                    userdata["r_client"].lpush(
+                        REDIS_SEPARATOR.join([REDIS_PREFIX, "flow-status"]),
+                        json.dumps(msg),
+                    )
+
+            except (ValueError, TypeError):
+                # normal string message
+                id = str(uuid.uuid4())
+                timestamp = time.time()
+                r_client.hset(
+                    REDIS_SEPARATOR.join([REDIS_MSG_PREFIX, queue, id]),
+                    mapping={
+                        "msg": lora_payload.decode(),
+                        "timestamp": timestamp,
+                        "seen": 0,  # False,
+                        "id": id,
+                    },
+                )
+                r_client.zadd(
+                    REDIS_SEPARATOR.join([REDIS_MSG_PREFIX, queue, "msgs"]), mapping={id: timestamp}
+                )
         case lbdata_types.lbflow_digest:
             print("lbflow_digest")
             id = lora_payload[0]
