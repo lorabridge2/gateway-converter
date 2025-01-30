@@ -199,8 +199,8 @@ class lbdata_types(IntEnum):
 
 
 class status_types(IntEnum):
-    TRANSMISSION_COMPLETE: 0
-    TRANSMISSION_FAILED: 1
+    TRANSMISSION_COMPLETE = 0
+    TRANSMISSION_FAILED = 1
 
 
 # The callback for when the client receives a CONNACK response from the server.
@@ -279,7 +279,10 @@ def on_message(client, userdata, msg):
 
             try:
                 msg = msgpack.loads(lora_payload, strict_map_key=False)
-                if msg['type'] in [status_types.TRANSMISSION_COMPLETE, status_types.TRANSMISSION_FAILED]:
+                if msg["type"] in [
+                    status_types.TRANSMISSION_COMPLETE,
+                    status_types.TRANSMISSION_FAILED,
+                ]:
                     userdata["r_client"].lpush(
                         REDIS_SEPARATOR.join([REDIS_PREFIX, "flow-status"]),
                         json.dumps(msg),
