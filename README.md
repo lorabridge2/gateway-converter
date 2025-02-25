@@ -1,6 +1,6 @@
 # Gateway Converter
 
-This repository is part of the [LoRaBridge](https://github.com/lorabridge/lorabridge) project.  
+This repository is part of the [LoRaBridge](https://github.com/lorabridge2/lorabridge) project.  
 It provides the docker image for the converter software used on our gateway device.  
 
 The Converter is a self-provided Python3 application, which listens for the device data published by the ChirpStack Gateway Bridge via MQTT message on the Mosquitto. 
@@ -13,8 +13,11 @@ This behaviour allows easy creation of plugins for transforming the data in orde
 - `CON_MQTT_PORT`: Port used by MQTT
 - `CON_MQTT_USERNAME`: MQTT username if used (can be a file as well)
 - `CON_MQTT_PASSWORD`: MQTT password if used (can be a file as well)
-- `CON_CHIRP_TOPIC`: MQTT topic used by Chirpstack (default: `chirp/stack`)
-- `CON_DEV_MAN_TOPIC`: MQTT topic used by this converter (default: `devicemanager`)
+- `DEV_EUI`: Device eui of bridge
+- `REDIS_HOST`: IP or hostname of Redis host
+- `REDIS_PORT`: Port used by Redis
+- `REDIS_DB`: Number of the database used inside Redis
+
 
 ## License
 
