@@ -236,10 +236,16 @@ def on_message(client, userdata, msg):
                 data = msgpack.loads(lora_payload, strict_map_key=False)
                 topic = data[-1]
                 del data[-1]
-                if isinstance(topic, int):
-                    topic = "0x{:016x}".format(topic)
+                # if isinstance(topic, int):
+                #     topic = "0x{:016x}".format(topic)
+                print("lb_id: " + str(topic))
+                topic = userdata["r_client"].hget("lorabridge:devman:index:lb", topic)
                 # topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
-                print(topic)
+                if not topic:
+                    print("data for unknown device")
+                    return
+
+                print("topic: " + topic)
                 print(data)
             except msgpack.UnpackException as err:
                 print(json.loads(msg.payload))
