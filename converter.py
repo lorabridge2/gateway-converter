@@ -241,9 +241,19 @@ def on_message(client, userdata, msg):
                 print("lb_id: " + str(topic))
                 topic = userdata["r_client"].hget("lorabridge:devman:index:lb", topic)
                 # topic, data = brotli.decompress(lora_payload).split(b" ", maxsplit=1)
+
                 if not topic:
                     print("data for unknown device")
                     return
+
+                old_stats = userdata["r_client"].get(f"lorabridge:device:{topic}:stats:old")
+                if old_stats:
+                    old_stats = json.loads(old_stats)
+                else:
+                    old_stats = {}
+
+                data = old_stats | data
+                userdata["r_client"].set(f"lorabridge:device:{topic}:stats:old", json.dumps(data))
 
                 print("topic: " + topic)
                 print(data)
