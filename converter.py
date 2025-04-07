@@ -248,12 +248,15 @@ def on_message(client, userdata, msg):
 
                 old_stats = userdata["r_client"].get(f"lorabridge:device:{topic}:stats:old")
                 if old_stats:
-                    old_stats = json.loads(old_stats)
+                    # old_stats = json.loads(old_stats)
+                    old_stats = msgpack.loads(old_stats, strict_map_key=False)
+                    print(old_stats)
                 else:
                     old_stats = {}
 
                 data = old_stats | data
-                userdata["r_client"].set(f"lorabridge:device:{topic}:stats:old", json.dumps(data))
+                # userdata["r_client"].set(f"lorabridge:device:{topic}:stats:old", json.dumps(data))
+                userdata["r_client"].set(f"lorabridge:device:{topic}:stats:old", msgpack.dumps(data))
 
                 print("topic: " + topic)
                 print(data)
