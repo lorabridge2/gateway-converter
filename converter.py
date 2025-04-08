@@ -14,6 +14,8 @@ from enum import IntEnum
 import msgpack
 import paho.mqtt.client as mqtt
 import redis
+import math
+from decimal import Decimal
 
 
 def get_fileenv(var: str):
@@ -203,6 +205,32 @@ class status_types(IntEnum):
     TRANSMISSION_FAILED = 1
 
 
+def fix_single_float(num: float) -> float:
+    decimals = Decimal(num % 1).as_tuple().digits
+    if (0 if len(decimals) < 6 else decimals[5]) == 9:
+        return round(num, 6)
+    else:
+        return math.trunc(num * 1000000) / 1000000
+
+
+def unpack(data: bytes) -> dict:
+    res = {}
+    unpacker = msgpack.Unpacker(strict_map_key=False)
+    unpacker.feed(data)
+    map_size = unpacker.read_map_header()
+    try:
+        for _ in range(map_size):
+            key = unpacker.unpack()
+            if data[unpacker.tell()] != 0xCA:
+                val = unpacker.unpack()
+            else:
+                val = fix_single_float(unpacker.unpack())
+            res[key] = val
+    except msgpack.exceptions.OutOfData:
+        return res
+    return res
+
+
 # The callback for when the client receives a CONNACK response from the server.
 def on_connect(client, userdata, flags, rc):
     logging.info("Connected with result code " + str(rc))
@@ -233,7 +261,8 @@ def on_message(client, userdata, msg):
         # https://stackoverflow.com/a/77694460
         case lbdata_types.data:
             try:
-                data = msgpack.loads(lora_payload, strict_map_key=False)
+                # data = msgpack.loads(lora_payload, strict_map_key=False)
+                data = unpack(lora_payload)
                 topic = data[-1]
                 del data[-1]
                 # if isinstance(topic, int):
