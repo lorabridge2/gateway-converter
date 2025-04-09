@@ -206,11 +206,15 @@ class status_types(IntEnum):
 
 
 def fix_single_float(num: float) -> float:
-    decimals = Decimal(num % 1).as_tuple().digits
-    if (0 if len(decimals) < 6 else decimals[5]) == 9:
-        return round(num, 6)
-    else:
-        return math.trunc(num * 1000000) / 1000000
+    # this is an approximation
+    # rounds to 6 significant figures
+    # as float32 can have 6 to 9 significant figures
+    # https://en.wikipedia.org/wiki/Single-precision_floating-point_format
+    dval = Decimal(num).as_tuple()
+    num_decimals = 6 - (len(dval.digits) - abs(dval.exponent))
+    if num_decimals < 0:
+        num_decimals = 0
+    return round(num, num_decimals)
 
 
 def unpack(data: bytes) -> dict:
