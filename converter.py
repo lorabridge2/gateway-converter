@@ -211,6 +211,7 @@ def fix_single_float(num: float) -> float:
     # as float32 can have 6 to 9 significant figures
     # https://en.wikipedia.org/wiki/Single-precision_floating-point_format
     dval = Decimal(num).as_tuple()
+    # precision of 6 digits - digits before comma
     num_decimals = 6 - (len(dval.digits) - abs(dval.exponent))
     if num_decimals < 0:
         num_decimals = 0
